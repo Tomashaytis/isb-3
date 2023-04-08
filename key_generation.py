@@ -9,23 +9,41 @@ logger.setLevel('INFO')
 
 
 def generate_symmetric_key(length: int) -> bytes:
+    """
+    The function generates a symmetric key for symmetric encryption algorithm.
+
+    :param length: length of symmetric key (bytes).
+    :return: symmetric key.
+    """
     key = os.urandom(length)
-    logging.info(f' Symmetric key generated')
+    logging.info(f' Symmetric key successfully generated (key length: {length} bytes)')
     return key
 
 
 def generate_asymmetric_keys() -> tuple:
+    """
+    The function generates an asymmetric key for asymmetric encryption algorithm.
+
+    :return: asymmetric key.
+    """
     keys = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048
     )
     private_key = keys
     public_key = keys.public_key()
-    logging.info(f' Asymmetric keys generated')
+    logging.info(f' Asymmetric keys successfully generated')
     return private_key, public_key
 
 
 def save_symmetric_key(key: bytes, file_name: str) -> None:
+    """
+    The function saves a symmetric key to txt file.
+
+    :param key: symmetric key for symmetric encryption algorithm.
+    :param file_name: name of txt file.
+    :return: None.
+    """
     try:
         with open(file_name, 'wb') as key_file:
             key_file.write(key)
@@ -35,6 +53,15 @@ def save_symmetric_key(key: bytes, file_name: str) -> None:
 
 
 def save_asymmetric_keys(private_key, public_key, private_pem: str, public_pem: str) -> None:
+    """
+    The function saves a private key and a public key to pem files.
+
+    :param private_key: private key for asymmetric encoding algorithm.
+    :param public_key: public key for asymmetric encoding algorithm.
+    :param private_pem: pem file for private key.
+    :param public_pem: pem file for public key.
+    :return: None
+    """
     try:
         with open(private_pem, 'wb') as private_out:
             private_out.write(private_key.private_bytes(encoding=serialization.Encoding.PEM,
@@ -53,6 +80,12 @@ def save_asymmetric_keys(private_key, public_key, private_pem: str, public_pem: 
 
 
 def load_symmetric_key(file_name: str) -> bytes:
+    """
+    The function loads  a symmetric key from txt file.
+
+    :param file_name: name of txt file.
+    :return: symmetric key for symmetric encoding algorithm.
+    """
     try:
         with open(file_name, mode='rb') as key_file:
             key = key_file.read()
@@ -63,6 +96,12 @@ def load_symmetric_key(file_name: str) -> bytes:
 
 
 def load_private_key(private_pem: str):
+    """
+    The function loads a private key from pem file.
+
+    :param private_pem: name of pem file.
+    :return: private key for asymmetric encoding algorithm.
+    """
     private_key = None
     try:
         with open(private_pem, 'rb') as pem_in:
@@ -75,6 +114,12 @@ def load_private_key(private_pem: str):
 
 
 def load_public_key(public_pem: str):
+    """
+    The function loads a public key from pem file.
+
+    :param public_pem: name of pem file.
+    :return: public key for asymmetric encoding algorithm.
+    """
     public_key = None
     try:
         with open(public_pem, 'rb') as pem_in:
