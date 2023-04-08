@@ -2,6 +2,7 @@ import os
 import logging
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 
 logger = logging.getLogger()
 logger.setLevel('INFO')
@@ -24,6 +25,15 @@ def generate_asymmetric_keys() -> tuple:
     return private_key, public_key
 
 
+def save_symmetric_key(key: bytes, file_name: str) -> None:
+    try:
+        with open(file_name, 'wb') as key_file:
+            key_file.write(key)
+        logging.info(f' symmetric key saved to {file_name}')
+    except OSError as err:
+        logging.warning(f' symmetric key was not saved to file {file_name}\n{err}')
+
+
 def save_asymmetric_keys(private_key, public_key, private_pem: str, public_pem: str) -> None:
     try:
         with open(private_pem, 'wb') as private_out:
@@ -42,11 +52,30 @@ def save_asymmetric_keys(private_key, public_key, private_pem: str, public_pem: 
         logging.warning(f' public key was not saved to file {public_pem}\n{err}')
 
 
-
-def save_symmetric_key(key: bytes, file_name: str) -> None:
+def load_symmetric_key(file_name: str) -> None:
     try:
-        with open(file_name, 'wb') as key_file:
-            key_file.write(key)
-        logging.info(f' symmetric key saved to {file_name}')
+        with open(file_name, mode='rb') as key_file:
+            key = key_file.read()
+        logging.info(f' symmetric key loaded from {file_name}')
     except OSError as err:
-        logging.warning(f' symmetric key was not saved to file {file_name}\n{err}')
+        logging.warning(f' symmetric key was not loaded from file {file_name}\n{err}')
+
+
+def load_asymmetric_keys(private_pem: str, public_pem: str) -> tuple:
+    private_key = None
+    public_key = None
+    try:
+        with open(private_pem, 'rb') as pem_in:
+            private_bytes = pem_in.read()
+        private_key = load_pem_private_key(private_bytes, password=None)
+        logging.info(f' private key loaded from {public_pem}')
+    except OSError as err:
+        logging.warning(f' public key was not loaded from file {public_pem}\n{err}')
+    try:
+        with open(public_pem, 'rb') as pem_in:
+            public_bytes = pem_in.read()
+        public_key = load_pem_public_key(public_bytes)
+        logging.info(f' public key loaded from {public_pem}')
+    except OSError as err:
+        logging.warning(f' public key was not loaded from file {public_pem}\n{err}')
+    return private_key, public_key
