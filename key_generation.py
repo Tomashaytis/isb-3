@@ -52,25 +52,30 @@ def save_asymmetric_keys(private_key, public_key, private_pem: str, public_pem: 
         logging.warning(f' public key was not saved to file {public_pem}\n{err}')
 
 
-def load_symmetric_key(file_name: str) -> None:
+def load_symmetric_key(file_name: str) -> bytes:
     try:
         with open(file_name, mode='rb') as key_file:
             key = key_file.read()
         logging.info(f' symmetric key loaded from {file_name}')
     except OSError as err:
         logging.warning(f' symmetric key was not loaded from file {file_name}\n{err}')
+    return key
 
 
-def load_asymmetric_keys(private_pem: str, public_pem: str) -> tuple:
+def load_private_key(private_pem: str):
     private_key = None
-    public_key = None
     try:
         with open(private_pem, 'rb') as pem_in:
             private_bytes = pem_in.read()
         private_key = load_pem_private_key(private_bytes, password=None)
-        logging.info(f' private key loaded from {public_pem}')
+        logging.info(f' private key loaded from {private_pem}')
     except OSError as err:
-        logging.warning(f' public key was not loaded from file {public_pem}\n{err}')
+        logging.warning(f' private key was not loaded from file {private_pem}\n{err}')
+    return private_key
+
+
+def load_public_key(public_pem: str):
+    public_key = None
     try:
         with open(public_pem, 'rb') as pem_in:
             public_bytes = pem_in.read()
@@ -78,4 +83,5 @@ def load_asymmetric_keys(private_pem: str, public_pem: str) -> tuple:
         logging.info(f' public key loaded from {public_pem}')
     except OSError as err:
         logging.warning(f' public key was not loaded from file {public_pem}\n{err}')
-    return private_key, public_key
+    return public_key
+
