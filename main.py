@@ -4,9 +4,9 @@ import json
 import logging
 
 from key_generation import generate_symmetric_key, generate_asymmetric_keys, save_symmetric_key, save_asymmetric_keys, \
-    load_symmetric_key, load_private_key, load_public_key
+    load_symmetric_key, load_private_key
 from encrypt_text import asymmetric_encrypt, symmetric_encrypt
-from decrypt_text import asymmetric_decrypt
+from decrypt_text import asymmetric_decrypt, symmetric_decrypt
 from for_text import write_text, read_text
 
 SETTINGS_FILE = os.path.join('files', 'settings.json')
@@ -32,11 +32,17 @@ if __name__ == '__main__':
         else:
             logging.warning(' symmetric key must be between 4 and 56 bytes long')
     elif args.encryption is not None:
-        cipher_key = load_symmetric_key(settings['symmetric_key'])
         private_key = load_private_key(settings['secret_key'])
+        cipher_key = load_symmetric_key(settings['symmetric_key'])
         symmetric_key = asymmetric_decrypt(private_key, cipher_key)
         text = read_text(settings['initial_file'])
         cipher_text = symmetric_encrypt(symmetric_key, text)
         write_text(cipher_text, settings['encrypted_file'])
     else:
-        pass
+        private_key = load_private_key(settings['secret_key'])
+        cipher_key = load_symmetric_key(settings['symmetric_key'])
+        symmetric_key = asymmetric_decrypt(private_key, cipher_key)
+        cipher_text = read_text(settings['encrypted_file'])
+        cipher_text, iv = cipher_text[8:], cipher_text[:8]
+        text = symmetric_decrypt(symmetric_key, cipher_text, iv)
+        write_text(text, settings['decrypted_file'])
