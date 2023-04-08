@@ -5,8 +5,9 @@ import logging
 
 from key_generation import generate_symmetric_key, generate_asymmetric_keys, save_symmetric_key, save_asymmetric_keys, \
     load_symmetric_key, load_private_key, load_public_key
-from encrypt_text import asymmetric_encrypt
+from encrypt_text import asymmetric_encrypt, symmetric_encrypt
 from decrypt_text import asymmetric_decrypt
+from for_text import write_text, read_text
 
 SETTINGS_FILE = os.path.join('files', 'settings.json')
 
@@ -34,6 +35,8 @@ if __name__ == '__main__':
         cipher_key = load_symmetric_key(settings['symmetric_key'])
         private_key = load_private_key(settings['secret_key'])
         symmetric_key = asymmetric_decrypt(private_key, cipher_key)
-        print(symmetric_key)
+        text = read_text(settings['initial_file'])
+        cipher_text = symmetric_encrypt(symmetric_key, text)
+        write_text(cipher_text, settings['encrypted_file'])
     else:
         pass
