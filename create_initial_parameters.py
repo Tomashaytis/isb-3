@@ -10,5 +10,5 @@ SETTINGS = {
 }
 
 if __name__ == '__main__':
-    with open('files/settings.json', 'w') as fp:
+    with open('test_settings.json', 'w') as fp:
         json.dump(SETTINGS, fp)

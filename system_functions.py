@@ -1,10 +1,22 @@
 import logging
+import json
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 
 logger = logging.getLogger()
 logger.setLevel('INFO')
+
+
+def load_settings(settings_file: str) -> dict:
+    settings = None
+    try:
+        with open(settings_file) as json_file:
+            settings = json.load(json_file)
+        logging.info(f"Settings file successfully loaded from file {settings_file}")
+    except OSError as err:
+        logging.warning(f"Settings file was not loaded from file {settings_file}\n{err}")
+    return settings
 
 
 def byte_read_text(file_name: str) -> bytes:
