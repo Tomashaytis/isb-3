@@ -1,6 +1,5 @@
-import os
 import logging
-from cryptography.hazmat.primitives.asymmetric import rsa
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.serialization import load_pem_public_key, load_pem_private_key
 
@@ -8,32 +7,36 @@ logger = logging.getLogger()
 logger.setLevel('INFO')
 
 
-def generate_symmetric_key(length: int) -> bytes:
+def byte_read_text(file_name: str) -> bytes:
     """
-    The function generates a symmetric key for symmetric encryption algorithm.
+    The function reads text in byte form from txt file.
 
-    :param length: length of symmetric key (bytes).
-    :return: symmetric key.
+    :param file_name: name of txt file.
+    :return: text in byte form.
     """
-    key = os.urandom(length)
-    logging.info(f' Symmetric key successfully generated (key length: {length} bytes)')
-    return key
+    try:
+        with open(file_name, mode='rb') as text_file:
+            text = text_file.read()
+        logging.info(f' Text was successfully read from file {file_name}')
+    except OSError as err:
+        logging.warning(f' Text was not read from file {file_name}\n{err}')
+    return text
 
 
-def generate_asymmetric_keys() -> tuple:
+def byte_write_text(text: bytes, file_name: str) -> None:
     """
-    The function generates an asymmetric key for asymmetric encryption algorithm.
+    The function writes text in byte form to txt file.
 
-    :return: asymmetric key.
+    :param text: text for writing
+    :param file_name: name of txt file.
+    :return: None
     """
-    keys = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048
-    )
-    private_key = keys
-    public_key = keys.public_key()
-    logging.info(f' Asymmetric keys successfully generated')
-    return private_key, public_key
+    try:
+        with open(file_name, mode='wb') as text_file:
+            text_file.write(text)
+        logging.info(f' Text was successfully written to file {file_name}')
+    except OSError as err:
+        logging.warning(f' Text was not written to file {file_name}\n{err}')
 
 
 def save_symmetric_key(key: bytes, file_name: str) -> None:
@@ -129,4 +132,3 @@ def load_public_key(public_pem: str):
     except OSError as err:
         logging.warning(f' Public key was not loaded from file {public_pem}\n{err}')
     return public_key
-

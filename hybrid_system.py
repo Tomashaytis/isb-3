@@ -1,15 +1,13 @@
-import os
 import argparse
 import json
 import logging
 
-from key_generation import generate_symmetric_key, generate_asymmetric_keys, save_symmetric_key, save_asymmetric_keys, \
+from symmetric_encryption import generate_symmetric_key, symmetric_encrypt, symmetric_decrypt
+from asymmetric_encryption import generate_asymmetric_keys, asymmetric_encrypt, asymmetric_decrypt
+from system_functions import byte_write_text, byte_read_text, save_symmetric_key, save_asymmetric_keys, \
     load_symmetric_key, load_private_key
-from encryption import asymmetric_encrypt, symmetric_encrypt
-from decryption import asymmetric_decrypt, symmetric_decrypt
-from for_text import byte_write_text, byte_read_text
 
-SETTINGS_FILE = os.path.join('files', 'settings.json')
+PATH_TO_SETTINGS_FILE = 'path_to_settings_file.txt'
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -18,10 +16,19 @@ if __name__ == '__main__':
                                                               'симметричного ключа (4 - 56 байт))')
     group.add_argument('-enc', '--encryption', help='Запускает режим шифрования')
     group.add_argument('-dec', '--decryption', help='Запускает режим дешифрования')
+    group.add_argument('-set', '--settings', type=str, help='Позволяет использовать собственный json-файл с указанием '
+                                                            'необходимых путей для работы системы '
+                                                            '(Введите путь к файлу)')
     args = parser.parse_args()
-    with open(SETTINGS_FILE) as json_file:
-        settings = json.load(json_file)
-    if args.generation is not None:
+    with open(PATH_TO_SETTINGS_FILE) as f:
+        settings_file = f.read()
+    try:
+        with open(settings_file) as json_file:
+            settings = json.load(json_file)
+        logging.info(f"Settings file successfully loaded from file {settings_file}")
+    except OSError as err:
+        logging.warning(f"Settings file was not loaded from file {settings_file}\n{err}")
+    if args.generation:
         length = args.generation
         if 4 <= length <= 56:
             symmetric_key = generate_symmetric_key(length)
@@ -31,17 +38,20 @@ if __name__ == '__main__':
             save_symmetric_key(cipher_symmetric_key, settings['symmetric_key'])
         else:
             logging.warning(' Symmetric key must be between 4 and 56 bytes long')
-    elif args.encryption is not None:
+    elif args.encryption:
         private_key = load_private_key(settings['secret_key'])
         cipher_key = load_symmetric_key(settings['symmetric_key'])
         symmetric_key = asymmetric_decrypt(private_key, cipher_key)
         text = byte_read_text(settings['initial_file'])
         cipher_text = symmetric_encrypt(symmetric_key, text)
         byte_write_text(cipher_text, settings['encrypted_file'])
-    else:
+    elif args.decryption:
         private_key = load_private_key(settings['secret_key'])
         cipher_key = load_symmetric_key(settings['symmetric_key'])
         symmetric_key = asymmetric_decrypt(private_key, cipher_key)
         cipher_text = byte_read_text(settings['encrypted_file'])
         text = symmetric_decrypt(symmetric_key, cipher_text)
         byte_write_text(text, settings['decrypted_file'])
+    else:
+        with open(args.settings) as json_file:
+            settings = json.load(json_file)
